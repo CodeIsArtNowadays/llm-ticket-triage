@@ -1,0 +1,28 @@
+import uuid
+from datetime import datetime
+
+from sqlalchemy import UUID, DateTime, ForeignKey, func
+from sqlalchemy.orm import Mapped, mapped_column
+
+from src.core.database import Base
+
+
+class TicketModel(Base):
+    __tablename__ = 'tickets'
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
+    user: Mapped[str] = mapped_column()
+    message: Mapped[str] = mapped_column()
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class SummaryModel(Base):
+    __tablename__ = 'sumaries'
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
+    summary: Mapped[str] = mapped_column()
+    
+    ticker_id: Mapped[UUID] = mapped_column(ForeignKey('tickets.id'))
