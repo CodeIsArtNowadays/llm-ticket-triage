@@ -28,4 +28,4 @@ class SummaryModel(Base):
     category: Mapped[CategoryType] = mapped_column(String(32))
     priority: Mapped[PriorityType] = mapped_column(String(32))
     
-    ticker_id: Mapped[UUID] = mapped_column(ForeignKey('tickets.id'), unique=True)
+    ticker_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('tickets.id'), unique=True)

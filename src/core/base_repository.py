@@ -3,6 +3,8 @@ from typing import TypeVar
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.core.exceptions import NotFoundException
+
 ModelType = TypeVar('ModelType')
 
 class BaseRepository[ModelType]:
@@ -21,6 +23,8 @@ class BaseRepository[ModelType]:
 
     async def get_by_id(self, id):
         res = await self.session.get(self.model, id)
+        if res is None:
+            raise NotFoundException(message=f'{self.model} instance with id {id} not found')
         return res
 
     async def get_all(self):
