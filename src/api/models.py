@@ -1,9 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import UUID, DateTime, ForeignKey, func
+from sqlalchemy import UUID, DateTime, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
+from src.api.types import CategoryType, PriorityType
 from src.core.database import Base
 
 
@@ -24,5 +25,7 @@ class SummaryModel(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
     summary: Mapped[str] = mapped_column()
+    category: Mapped[CategoryType] = mapped_column(String(32))
+    priority: Mapped[PriorityType] = mapped_column(String(32))
     
-    ticker_id: Mapped[UUID] = mapped_column(ForeignKey('tickets.id'))
+    ticker_id: Mapped[UUID] = mapped_column(ForeignKey('tickets.id'), unique=True)
