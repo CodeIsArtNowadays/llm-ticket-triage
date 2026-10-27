@@ -1,13 +1,16 @@
 import asyncio
+
 import pytest
 from httpx import ASGITransport, AsyncClient
+
 from main import app
 from src.core.database import local_session  # твоя фабрика сессий (async_sessionmaker)
+
 
 # 1. Жестко привязываем pytest к ОДНОМУ глобальному циклу событий на всю сессию
 @pytest.fixture(scope="session")
 def event_loop():
-    policy = asyncio.get_event_loop_policy()
+    policy = asyncio.get_event_loop_policy()  # ty:ignore[deprecated]
     loop = policy.new_event_loop()
     yield loop
     loop.close()
@@ -27,7 +30,7 @@ async def ac():
 async def clear_db_connections():
     yield
     # Принудительно закрываем все зависшие транзакции сессии
-    await local_session.remove() if hasattr(local_session, "remove") else None
+    await local_session.remove() if hasattr(local_session, "remove") else None  # ty:ignore[call-non-callable]
     
     # Пытаемся найти движок внутри фабрики и корректно утилизировать его пул
     if hasattr(local_session, "kw") and "bind" in local_session.kw:

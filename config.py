@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     DB_USER: str = ''
     DB_PASS: str = ''
 
+    AI_KEY: str = ''
+
     model_config = SettingsConfigDict(env_file='.env')
 
     @property
