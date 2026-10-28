@@ -7,7 +7,7 @@ from src.api.models import SummaryModel, TicketModel
 from src.api.router import api_router
 from src.core.database import Base, engine
 from src.core.exceptions import ProjectBaseException
-
+from src.agency.mock_data.models import ClientModel, TransactionModel
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

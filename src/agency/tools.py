@@ -22,7 +22,12 @@ async def get_customer_by_username(username: str):
         res = await session.scalar(stmt)
         if not res:
             raise NotFoundException(message=f'Customer with username {username} not found')
-    return res
+        customer = {
+            'client_id': res.id,
+            'username': res.username,
+            'discount_status': res.status
+        }
+    return customer
 
 @tool
 async def get_transactions_by_customer_id(client_id: int):
@@ -37,8 +42,18 @@ async def get_transactions_by_customer_id(client_id: int):
     """
     async with local_session.begin() as session:
         stmt = select(TransactionModel).where(TransactionModel.client_id == client_id)
-        res = await session.scalar(stmt)
+        res = await session.scalars(stmt)
         if not res:
             raise NotFoundException(message=f'Txs for client {client_id} not found')
-    return res
+
+        txs = []
+        for tx in res.all():
+            txs.append({
+                'id': tx.id,
+                'amount': tx.amount,
+                'client_id': tx.client_id,
+                'created': tx.created_at
+            })
+
+    return txs
 
