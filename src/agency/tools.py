@@ -43,13 +43,14 @@ async def get_transactions_by_customer_id(client_id: int):
     async with local_session.begin() as session:
         stmt = select(TransactionModel).where(TransactionModel.client_id == client_id)
         res = await session.scalars(stmt)
-        if not res.all():
+        transactions = res.all()
+        if not transactions:
             return {
                 'error': f'No transactions for user with id {client_id}'
             }
 
         txs = []
-        for tx in res.all():
+        for tx in transactions:
             txs.append({
                 'id': tx.id,
                 'amount': tx.amount,

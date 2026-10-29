@@ -1,15 +1,16 @@
-import uuid
 import json
+import uuid
 
+from fastapi import BackgroundTasks
+
+from src.agency.agent import run_graph
 from src.api.models import SummaryModel, TicketModel
 from src.api.repository import SummaryRepository, TicketRepository
 from src.api.schemas import (
     SummaryCreateSchema,
     TicketBaseSchema,
-    TicketRetrieveSchema,
     TicketSummarySchema,
 )
-from src.agency.agent import run_graph
 
 
 class TicketService:
@@ -36,17 +37,18 @@ class TicketService:
             error=summary.error,
             answer=summary.answer
         )
-    
-    async def process_ticket(self, ticket_data: TicketBaseSchema):
-        ticket = await self.create_ticket(ticket_data)
-        print(ticket_data.model_dump())
-        summary_from_llm_json = await run_graph(ticket_data.model_dump())
+
+    async def proccess_summary(self, ticket: TicketModel):
+        summary_from_llm_json = await run_graph({'user': ticket.user, 'message': ticket.message})
         summary_from_llm = json.loads(summary_from_llm_json)
         if summary_from_llm['error']:
             print("ERROR")
-        summary = await self.create_summary(SummaryCreateSchema(**summary_from_llm, ticker_id=ticket.id))
-
-        return await self.create_ticket_summary_schema(ticket, summary)
+        await self.create_summary(SummaryCreateSchema(**summary_from_llm, ticker_id=ticket.id))
+    
+    async def process_ticket(self, ticket_data: TicketBaseSchema, bg_task: BackgroundTasks):
+        ticket = await self.create_ticket(ticket_data)
+        bg_task.add_task(self.proccess_summary, ticket)
+        return ticket
 
     async def get_ticket_summary_by_id(self, id: uuid.UUID) -> TicketSummarySchema:
         ticket = await self.ticket_repo.get_by_id(id)
