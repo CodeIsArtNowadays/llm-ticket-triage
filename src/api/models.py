@@ -21,11 +21,13 @@ class TicketModel(Base):
 
 
 class SummaryModel(Base):
-    __tablename__ = 'sumaries'
+    __tablename__ = 'summaries'
 
     id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
     summary: Mapped[str] = mapped_column()
     category: Mapped[CategoryType] = mapped_column(String(32))
     priority: Mapped[PriorityType] = mapped_column(String(32))
+    answer: Mapped[str] = mapped_column()
+    error: Mapped[bool] = mapped_column(default=False)
     
     ticker_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('tickets.id'), unique=True)

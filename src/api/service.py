@@ -1,4 +1,5 @@
 import uuid
+import json
 
 from src.api.models import SummaryModel, TicketModel
 from src.api.repository import SummaryRepository, TicketRepository
@@ -8,15 +9,8 @@ from src.api.schemas import (
     TicketRetrieveSchema,
     TicketSummarySchema,
 )
+from src.agency.agent import run_graph
 
-
-def mock_ai(ticket_data: TicketRetrieveSchema) -> SummaryCreateSchema:
-    return SummaryCreateSchema(
-        summary='summary1',
-        category='billing',
-        priority='low',
-        ticker_id=ticket_data.id
-    )
 
 class TicketService:
 
@@ -38,13 +32,19 @@ class TicketService:
             message=ticket.message,
             summary=summary.summary,
             category=summary.category,
-            priority=summary.priority
+            priority=summary.priority,
+            error=summary.error,
+            answer=summary.answer
         )
     
     async def process_ticket(self, ticket_data: TicketBaseSchema):
         ticket = await self.create_ticket(ticket_data)
-        summary_from_ai = mock_ai(ticket)
-        summary = await self.create_summary(summary_from_ai)
+        print(ticket_data.model_dump())
+        summary_from_llm_json = await run_graph(ticket_data.model_dump())
+        summary_from_llm = json.loads(summary_from_llm_json)
+        if summary_from_llm['error']:
+            print("ERROR")
+        summary = await self.create_summary(SummaryCreateSchema(**summary_from_llm, ticker_id=ticket.id))
 
         return await self.create_ticket_summary_schema(ticket, summary)
 
@@ -53,3 +53,5 @@ class TicketService:
         summary = await self.summary_repo.get_by_ticket_id(id)
 
         return await self.create_ticket_summary_schema(ticket, summary)
+
+    

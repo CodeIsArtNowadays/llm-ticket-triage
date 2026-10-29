@@ -58,14 +58,15 @@ graph.add_edge('tools', 'agent')
 app = graph.compile()
 
 async def run_graph(user_data):
-    init_message = f"USERNAME: {user_data['username']} \n QUESTION: {user_data['message']}"
+    init_message = f"USERNAME: {user_data['user']} \n QUESTION: {user_data['message']}"
     init_state = AgentState({'messages': init_message})
     res = await app.ainvoke(init_state)
-    print(res)
+    return res['messages'][-1].content
 
 if __name__ == '__main__':
     john_duplicate_charge_request = {
-        'username': 'Kyle',
+        'user': 'John',
         'message': 'I see two charges of 1500 on October 28, 2026, around 10:00. Can you check whether these could be duplicate charges?'
     }
-    asyncio.run(run_graph(john_duplicate_charge_request))
+    res = asyncio.run(run_graph(john_duplicate_charge_request))
+    print(res)
